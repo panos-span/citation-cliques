@@ -1,0 +1,21 @@
+BEGIN SETUP
+# Sample author_profiles used by author_matched_pairs.sql
+rolap.author_profiles:
+orcid	subject	papers_in_subject	avg_eigenfactor	author_tier
+b1	Bio	2	0.10	"Bottom Tier"
+t1	Bio	3	0.90	"Top Tier"
+x1	Other	5	0.50	"Top Tier"
+
+# Provide empty staging table so the CREATE INDEX in SQL doesn't error out
+staging_control_authors_bucketed:
+subject	paper_bucket
+Bio	0
+END
+
+INCLUDE CREATE author_matched_pairs.sql
+
+BEGIN RESULT
+author_matched_pairs:
+case_orcid	control_orcid subject
+b1	t1	Bio
+END

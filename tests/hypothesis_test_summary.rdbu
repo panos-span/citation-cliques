@@ -1,0 +1,15 @@
+BEGIN SETUP
+# matched_pair_comparison rows used to compute overall summary
+rolap.matched_pair_comparison:
+case_orcid	control_orcid	subject	case_citations	case_self_citation_rate	case_coauthor_citation_rate	control_citations	control_self_citation_rate	control_coauthor_citation_rate
+c1	c2	S	10	0.2	0.05	8	0.1	0.02
+c3	c4	S	5	0.1	0.03	7	0.15	0.01
+END
+
+INCLUDE CREATE hypothesis_test_summary.sql
+
+BEGIN RESULT
+hypothesis_test_summary:
+category	mean_citation_difference	mean_self_citation_rate_difference	mean_coauthor_citation_rate_difference	pct_case_higher_self_cite	pct_case_higher_coauthor_cite
+OVERALL	0.0	0.025	0.025	0.5	1.0
+END

@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Databases — fetch from Zenodo; see README.md
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Pipeline intermediate stamps
+reports/
+tables/
+analysis_results/
+analysis_results_v4/
+publication_figures/
+publication_figures_v4/
+figures/
+.depend
+.depend.all
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+tags
+
+# LaTeX (paper lives in a separate repo)
+*.aux
+*.bbl
+*.blg
+*.fls
+*.fdb_latexmk
+*.log
+*.out
+*.bcf
+*.run.xml
+*.synctex.gz
+main.pdf

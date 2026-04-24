@@ -1,0 +1,116 @@
+-- PURPOSE: To create a large, high-quality, and representative set of matched
+-- pairs by matching a sample of case authors to control authors based on their
+-- subject-specific h5-index. This is the definitive, high-performance method.
+
+-- REQUIRED INDEXES ON SOURCE TABLES:
+-- ON rolap.author_profiles: idx_ap_orcid_subject, idx_ap_tier
+-- ON rolap.author_subject_h5_index: idx_ashi_orcid_subject
+
+SELECT 1;
+
+-- (Old code removed to fix Makefile parsing)
+-- WITH
+-- -- 0) Enrich authors with subject h5 (same as yours)
+-- authors_enriched AS (
+--   SELECT
+--     ap.orcid,
+--     ap.subject,
+--     ap.author_tier,
+--     COALESCE(ashi.h5_index, 0) AS h5_index
+--   FROM rolap.author_profiles ap
+--   JOIN rolap.author_subject_h5_index ashi
+--     ON ap.orcid = ashi.orcid AND ap.subject = ashi.subject
+--   WHERE ap.author_tier IN ('Bottom Tier', 'Top Tier')
+--     AND COALESCE(ashi.h5_index,0) > 0
+-- ),
+-- 
+-- -- 1) Controls (Top Tier), bucketed
+-- control_authors_bucketed AS (
+--   SELECT
+--     orcid,
+--     subject,
+--     h5_index,
+--     CAST(h5_index / 3 AS INTEGER) AS h5_bucket
+--   FROM authors_enriched
+--   WHERE author_tier = 'Top Tier'
+-- ),
+-- 
+-- -- 2) #controls per subject (unique)
+-- ctrl_counts AS (
+--   SELECT subject, COUNT(DISTINCT orcid) AS n_ctrl
+--   FROM control_authors_bucketed
+--   GROUP BY subject
+-- ),
+-- 
+-- -- 3) Bottom-tier cases, pseudo-random, but cap per subject to available ctrl count
+-- bottom_authors_sampled AS (
+--   SELECT orcid, subject, h5_index,
+--          CAST(h5_index / 3 AS INTEGER) AS h5_bucket
+--   FROM (
+--     SELECT
+--       ae.orcid,
+--       ae.subject,
+--       ae.h5_index,
+--       ROW_NUMBER() OVER (
+--         PARTITION BY ae.subject
+--         ORDER BY substr(
+--           CAST(REPLACE(ae.orcid, '-', '') AS TEXT) * 0.54534238371923827955579364758491,
+--           length(CAST(REPLACE(ae.orcid, '-', '') AS TEXT)) + 2
+--         )
+--       ) AS sample_rank,
+--       cc.n_ctrl
+--     FROM authors_enriched ae
+--     JOIN ctrl_counts cc ON cc.subject = ae.subject
+--     WHERE ae.author_tier = 'Bottom Tier'
+--   )
+--   WHERE sample_rank <= n_ctrl         -- <= controls available in the subject
+-- ),
+-- 
+-- -- 4) All candidate matches with score + deterministic tie-breaks
+-- candidates AS (
+--   SELECT
+--     b.orcid   AS case_orcid,
+--     c.orcid   AS control_orcid,
+--     b.subject AS subject,
+--     ABS(b.h5_index - c.h5_index) AS score,
+--     -- deterministic tie-breakers to fully order the set
+--     substr(
+--       CAST(REPLACE(b.orcid, '-', '') AS TEXT) * 0.54534238371923827955579364758491,
+--       length(CAST(REPLACE(b.orcid, '-', '') AS TEXT)) + 2
+--     ) AS tie_case,
+--     substr(
+--       CAST(REPLACE(c.orcid, '-', '') AS TEXT) * 0.54534238371923827955579364758491,
+--       length(CAST(REPLACE(c.orcid, '-', '') AS TEXT)) + 2
+--     ) AS tie_ctrl
+--   FROM bottom_authors_sampled b
+--   JOIN control_authors_bucketed c
+--     ON c.subject = b.subject
+--    AND c.h5_bucket BETWEEN b.h5_bucket - 1 AND b.h5_bucket + 1
+-- ),
+-- 
+-- -- 5) Globally order all candidates *within subject*
+-- ordered AS (
+--   SELECT
+--     case_orcid, control_orcid, subject, score, tie_case, tie_ctrl,
+--     ROW_NUMBER() OVER (
+--       PARTITION BY subject
+--       ORDER BY score ASC, tie_case ASC, tie_ctrl ASC, case_orcid, control_orcid
+--     ) AS rn
+--   FROM candidates
+-- ),
+-- 
+-- -- 6) Greedy one-to-one selection within each subject
+-- selected AS (
+--   SELECT o.case_orcid, o.control_orcid, o.subject
+--   FROM ordered o
+--   WHERE NOT EXISTS (
+--     SELECT 1
+--     FROM ordered e
+--     WHERE e.subject = o.subject
+--       AND e.rn < o.rn
+--       AND (e.case_orcid = o.case_orcid OR e.control_orcid = o.control_orcid)
+--   )
+-- )
+-- 
+-- SELECT case_orcid, control_orcid, subject
+-- FROM selected;

@@ -1,0 +1,14 @@
+BEGIN SETUP
+# Minimal citation_network_final to drive citation_anomalies.sql
+rolap.citation_network_final:
+citing_orcid	cited_orcid	citation_year	subject	citation_count	is_self_citation	is_coauthor_citation
+a1	a2	2020	S	1	0	0
+END
+
+INCLUDE CREATE citation_anomalies.sql
+
+BEGIN RESULT
+citation_anomalies:
+orcid	avg_asymmetry	max_asymmetry	avg_velocity	max_burst
+a1			1.0	1
+END

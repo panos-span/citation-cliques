@@ -1,0 +1,37 @@
+BEGIN SETUP
+# matched pairs define the set of relevant authors
+rolap.author_matched_pairs:
+case_orcid	control_orcid	subject
+a1	a2	S
+
+# work_authors link works to these authors
+work_authors:
+work_id	orcid
+1	a1
+2	a2
+
+# rolap.works_enhanced provides doi, published_year and subject for relevant works
+rolap.works_enhanced:
+work_id	doi	published_year	issn	subject	eigenfactor_score
+1	d1	2020	issn1	S	0.1
+2	d2	2020	issn1	S	0.2
+
+# work_references: work 1 cites doi d2 -> counts as a citation from a1 to a2
+work_references:
+work_id	doi
+1	d2
+
+# works table (used by coauthor_links computation)
+works:
+id	doi	published_year	issn
+1	d1	2020	issn1
+2	d2	2020	issn1
+END
+
+INCLUDE CREATE citation_network_final.sql
+
+BEGIN RESULT
+citation_network_final:
+citing_orcid	cited_orcid	citation_year	citation_count	is_self_citation	is_coauthor_citation
+a1	a2	2020	1	0	0
+END

@@ -1,0 +1,21 @@
+BEGIN SETUP
+rolap.citation_network_final:
+citing_orcid	subject	citation_count	citation_year	is_self_citation	is_coauthor_citation
+o1	Biology	2	2020	0	0
+o1	Biology	1	2020	0	0
+o2	Biology	5	2020	0	0
+ 
+rolap.author_profiles:
+orcid	subject	papers_in_subject	avg_eigenfactor	author_tier
+o1	Biology	1	0.1	Bottom_Tier
+o2	Biology	2	0.2	Top_Tier
+END
+
+INCLUDE CREATE author_behavior_metrics.sql
+
+BEGIN RESULT
+author_behavior_metrics:
+orcid	subject	total_outgoing_citations	self_citation_rate	coauthor_citation_rate
+o1	Biology	3	0	0
+o2	Biology	5	0	0
+END

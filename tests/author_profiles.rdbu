@@ -1,0 +1,35 @@
+BEGIN SETUP
+# work_authors linking works to ORCIDs
+work_authors:
+work_id	orcid
+1	o1
+2	o1
+3	o1
+4	o2
+5	o2
+6	o2
+
+# rolap.works_enhanced supplies subject and eigenfactor_score used by author_profiles
+rolap.works_enhanced:
+work_id	doi	published_year	issn	subject	eigenfactor_score
+1	d1	2019	issn1	Bio	0.10
+2	d2	2019	issn1	Bio	0.15
+3	d3	2019	issn1	Bio	0.05
+4	d4	2019	issn1	Bio	0.90
+5	d5	2019	issn1	Bio	0.95
+6	d6	2019	issn1	Bio	0.85
+
+# percentiles: p25=0.2, p75=0.8 for Bio
+rolap.eigenfactor_percentiles:
+subject	p25	p75
+Bio	0.2	0.8
+END
+
+INCLUDE CREATE author_profiles.sql
+
+BEGIN RESULT
+author_profiles:
+orcid	subject	papers_in_subject	avg_eigenfactor	author_tier
+o1	Bio	3	0.10	Bottom Tier
+o2	Bio	3	0.90	Top Tier
+END

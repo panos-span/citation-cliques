@@ -1,0 +1,19 @@
+BEGIN SETUP
+# joined result of author_matched_pairs and author_behavior_metrics
+rolap.author_matched_pairs:
+case_orcid	control_orcid	subject
+c1	c2	S
+
+rolap.author_behavior_metrics:
+orcid	subject	total_outgoing_citations	year	self_citation_rate	coauthor_citation_rate
+c1	S	10	2020	0.2	0.05
+c2	S	8	2020	0.1	0.02
+END
+
+INCLUDE CREATE matched_pair_comparison.sql
+
+BEGIN RESULT
+matched_pair_comparison:
+case_orcid	control_orcid	subject	case_citations	case_self_citation_rate	case_coauthor_citation_rate	control_citations	control_self_citation_rate	control_coauthor_citation_rate
+c1	c2	S	10	0.2	0.05	8	0.1	0.02
+END

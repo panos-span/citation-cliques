@@ -1,0 +1,27 @@
+BEGIN SETUP
+# matched pairs
+rolap.matched_pair_comparison:
+case_orcid	control_orcid	subject
+c1	c2	S
+
+# author_behavior_metrics provides some behavior metrics
+rolap.author_behavior_metrics:
+orcid	subject	total_outgoing_citations	year	self_citation_rate	coauthor_citation_rate
+c1	S	10	2020	0.2	0.05
+c2	S	8	2020	0.1	0.02
+
+# citation_anomalies provides malice metrics
+rolap.citation_anomalies:
+orcid	avg_asymmetry	max_asymmetry	avg_velocity	max_burst
+c1	0.1	0.2	0.5	1
+c2	0.0	0.0	0.0	0
+END
+
+INCLUDE CREATE author_features_final.sql
+
+BEGIN RESULT
+author_features_final:
+orcid	tier_type	subject	coauthor_citation_rate	avg_asymmetry	max_asymmetry	avg_velocity	max_burst	self_citation_rate
+c1	Case	S	0.05	0.1	0.2	0.5	1	0.2
+c2	Control	S	0.02	0.0	0.0	0.0	0	0.1
+END
