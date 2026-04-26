@@ -1,5 +1,7 @@
 # citation-cliques
 
+[![DOI](https://zenodo.org/badge/1220135353.svg)](https://doi.org/10.5281/zenodo.19786936)
+
 Replication package for *Citation Cliques in Low Impact Journals* (Spanakis,
 Alexandrou & Spinellis, 2026). The repository contains the SQL pipeline, Python
 analysis scripts, and RDBUnit test fixtures needed to reproduce every figure
